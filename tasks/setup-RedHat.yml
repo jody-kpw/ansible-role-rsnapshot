@@ -1,0 +1,81 @@
+---
+- name: Check if rsnapshot configuration file already exists.
+  stat: path=/etc/rsnapshot.conf
+  register: rsnapshot_config_file
+
+- name: Check if rsnapshot is already installed.
+  stat: path=/usr/bin/rsnapshot
+  register: rsnapshot_file
+
+- name: "Create a SSH key for master user {{rsnapshot_master_host_user}}"
+  user:
+    name: "{{rsnapshot_master_host_user}}"
+    generate_ssh_key: yes
+    ssh_key_file: ".ssh/{{ rsnapshot_master_ssh_key }}"
+    ssh_key_comment: "rsnapshot master user {{ rsnapshot_master_host_user }} at {{ inventory_hostname }}"
+  when: rsnapshot_master_ssh_key != false
+  tags:
+    - rsnapshot_config_ssh
+
+- name: "Install rsnapshot"
+  yum:
+    name: rsnapshot
+    state: present
+  when: (rsnapshot_file.stat.exists == false)
+
+- name: Copy rsnapshot configuration file.
+  template:
+    src: "{{ rsnapshot_config_template }}"
+    dest: /etc/rsnapshot.conf
+    owner: root
+    group: root
+    mode: 0644
+
+
+- name: Check snapshots directory exist.
+  stat:
+    path: "{{ rsnapshot_config_snapshot_root }}"
+  register: snapshots_exist
+
+- name: Creates directory, all snapshots will be stored under this directory.
+  file:
+    path: "{{ rsnapshot_config_snapshot_root }}"
+    state: directory
+    mode: 0755
+  when: (snapshots_exist.stat.exists == false)
+
+- name: Creates rsnapshot hourly backup cronjob
+  cron: minute="{{ rsnapshot_cron_hourly_minute }}" hour="{{ rsnapshot_cron_hourly_hour }}" day="{{ rsnapshot_cron_hourly_day }}" month="{{ rsnapshot_cron_hourly_month }}" weekday="{{ rsnapshot_cron_hourly_weekday }}"
+        name="rsnapshot hourly"
+        cron_file="rsnapshot"
+        user="root"
+        job="/usr/bin/rsnapshot hourly"
+
+- name: Creates rsnapshot daily backup cronjob
+  cron: minute="{{ rsnapshot_cron_daily_minute }}" hour="{{ rsnapshot_cron_daily_hour }}" day="{{ rsnapshot_cron_daily_day }}" month="{{ rsnapshot_cron_daily_month }}" weekday="{{ rsnapshot_cron_daily_weekday }}"
+        name="rsnapshot daily"
+        cron_file="rsnapshot"
+        user="root"
+        job="/usr/bin/rsnapshot daily"
+
+- name: Creates rsnapshot weekly backup cronjob
+  cron: minute="{{ rsnapshot_cron_weekly_minute }}" hour="{{ rsnapshot_cron_weekly_hour }}" day="{{ rsnapshot_cron_weekly_day }}" month="{{ rsnapshot_cron_weekly_month }}" weekday="{{ rsnapshot_cron_weekly_weekday }}"
+        name="rsnapshot weekly"
+        cron_file="rsnapshot"
+        user="root"
+        job="/usr/bin/rsnapshot weekly"
+
+- name: Creates rsnapshot monthly backup cronjob
+  cron: minute="{{ rsnapshot_cron_monthly_minute }}" hour="{{ rsnapshot_cron_monthly_hour }}" day="{{ rsnapshot_cron_monthly_day }}" month="{{ rsnapshot_cron_monthly_month }}" weekday="{{ rsnapshot_cron_monthly_weekday }}"
+        name="rsnapshot monthly"
+        cron_file="rsnapshot"
+        user="root"
+        job="/usr/bin/rsnapshot monthly"
+
+- name: "Check hourly."
+  command: rsnapshot hourly
+  register: command_result
+  when: rsnapshot_cmd_rsnapshot_hourly != false
+
+- debug: msg="{{ command_result.stdout }}"
+  when: rsnapshot_cmd_rsnapshot_hourly != false
