@@ -44,6 +44,32 @@
     mode: 0755
   when: (snapshots_exist.stat.exists == false)
 
+
+- name: Check logfile directory exist.
+  stat:
+    path: "{{ rsnapshot_config_logfile_folder }}"
+  register: logfile_exist
+
+- name: Creates logfile directory.
+  file:
+    path: "{{ rsnapshot_config_logfile_folder }}"
+    state: directory
+    mode: 0755
+  when: (logfile_exist.stat.exists == false)
+
+
+- name: Check lockfile directory exist.
+  stat:
+    path: "{{ rsnapshot_config_lockfile_folder }}"
+  register: lockfile_exist
+
+- name: Creates lockfile directory.
+  file:
+    path: "{{ rsnapshot_config_lockfile_folder }}"
+    state: directory
+    mode: 0755
+  when: (lockfile_exist.stat.exists == false)
+
 - name: Creates rsnapshot hourly backup cronjob
   cron: minute="{{ rsnapshot_cron_hourly_minute }}" hour="{{ rsnapshot_cron_hourly_hour }}" day="{{ rsnapshot_cron_hourly_day }}" month="{{ rsnapshot_cron_hourly_month }}" weekday="{{ rsnapshot_cron_hourly_weekday }}"
         name="rsnapshot hourly"

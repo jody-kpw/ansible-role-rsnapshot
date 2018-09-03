@@ -140,7 +140,7 @@ loglevel	{{ rsnapshot_config_loglevel }}
 # amount of data written is controlled by the "loglevel" parameter.
 #
 {% if rsnapshot_config_logfile %}
-logfile	{{ rsnapshot_config_logfile }}
+logfile	{{ rsnapshot_config_logfile_folder }}/{{ rsnapshot_config_logfile }}
 {% else %}
 #logfile	/var/log/rsnapshot.log
 {% endif %}
@@ -150,7 +150,7 @@ logfile	{{ rsnapshot_config_logfile }}
 # If you enable this, make sure the lockfile directory is not world
 # writable. Otherwise anyone can prevent the program from running.
 #
-lockfile	{{ rsnapshot_config_lockfile }}
+lockfile	{{ rsnapshot_config_lockfile_folder }}/{{ rsnapshot_config_lockfile }}
 
 # By default, rsnapshot check lockfile, check if PID is running
 # and if not, consider lockfile as stale, then start
