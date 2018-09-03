@@ -83,4 +83,4 @@ rsnapshot_cron_monthly_day: "1"
 rsnapshot_cron_monthly_month: "*"
 rsnapshot_cron_monthly_weekday: "*"
 
-rsnapshot_cmd_rsnapshot_hourly: "false"
+rsnapshot_cmd_rsnapshot_hourly: false
